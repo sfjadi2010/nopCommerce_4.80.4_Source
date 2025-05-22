@@ -106,16 +106,6 @@ else
             </text>
         }
         },        data: function(data) {
-            // Handle DataTables 1.10+ format (data.order array of objects)
-            if (data.order && data.order.length > 0) {
-                data["Order_0__Column"] = data.order[0].column;
-                data["Order_0__Dir"] = data.order[0].dir;
-            }
-            // Handle DataTables 1.9- format (iSortCol_0 and sSortDir_0)
-            else if (data.iSortCol_0 !== undefined) {
-                data["Order_0__Column"] = data.iSortCol_0;
-                data["Order_0__Dir"] = data.sSortDir_0;
-            }
             
             @if (Model.Filters != null)
             {

@@ -5,7 +5,8 @@
 @using Nop.Core.Domain.Localization
 
 @{
-    var supportRtl = (await workContext.GetWorkingLanguageAsync()).Rtl && !localizationSettings.IgnoreRtlPropertyForAdminArea;
+    var supportRtl = (await workContext.GetWorkingLanguageAsync()).Rtl &&
+    !localizationSettings.IgnoreRtlPropertyForAdminArea;
 
     var culture = CultureInfo.CurrentCulture;
     var uiCulture = CultureInfo.CurrentUICulture;
@@ -17,9 +18,11 @@
 
         var cultureToUse = NopCommonDefaults.DefaultLocalePattern; //Default regionalisation to use
 
-        if (fileProvider.DirectoryExists(fileProvider.Combine(WebHostEnvironment.WebRootPath, string.Format(localePattern, culture.Name))))
+        if (fileProvider.DirectoryExists(fileProvider.Combine(WebHostEnvironment.WebRootPath, string.Format(localePattern,
+        culture.Name))))
             cultureToUse = culture.Name;
-        else if (fileProvider.DirectoryExists(fileProvider.Combine(WebHostEnvironment.WebRootPath, string.Format(localePattern, culture.TwoLetterISOLanguageName))))
+        else if (fileProvider.DirectoryExists(fileProvider.Combine(WebHostEnvironment.WebRootPath, string.Format(localePattern,
+        culture.TwoLetterISOLanguageName))))
             cultureToUse = culture.TwoLetterISOLanguageName;
 
         return cultureToUse;
@@ -27,26 +30,27 @@
 }
 
 @*Google Font*@
-<!link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic" />
+<!link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic" />
 
 @* CSS resources *@
-<link rel="stylesheet" href="~/lib_npm/jquery-ui-dist/jquery-ui.min.css"/>
-<link rel="stylesheet" href="~/lib_npm/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css"/>
-<link rel="stylesheet" href="~/lib_npm/@("@fortawesome")/fontawesome-free/css/all.min.css"/>
-<link rel="stylesheet" href="~/lib_npm/datatables.net-bs4/css/dataTables.bootstrap4.min.css"/>
-<link rel="stylesheet" href="~/lib_npm/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css"/>
+<link rel="stylesheet" href="~/lib_npm/jquery-ui-dist/jquery-ui.min.css" />
+<link rel="stylesheet" href="~/lib_npm/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" />
+<link rel="stylesheet" href="~/lib_npm/@("@fortawesome")/fontawesome-free/css/all.min.css" />
+<link rel="stylesheet" href="~/lib_npm/datatables.net-bs4/css/dataTables.bootstrap4.min.css" />
+<link rel="stylesheet" href="~/lib_npm/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" />
 <link rel="stylesheet" href="~/lib_npm/overlayscrollbars/styles/overlayscrollbars.min.css" />
 
 @if (supportRtl)
 {
-    <link rel="stylesheet" href="~/lib_npm/@("@laylazi")/bootstrap-rtl/css/bootstrap-rtl.min.css"/>
-    <link rel="stylesheet" href="~/lib/adminLTE/css/adminlte-rtl.min.css"/>
-    <link rel="stylesheet" href="~/css/admin/styles.rtl.css"/>
+    <link rel="stylesheet" href="~/lib_npm/@("@laylazi")/bootstrap-rtl/css/bootstrap-rtl.min.css" />
+    <link rel="stylesheet" href="~/lib/adminLTE/css/adminlte-rtl.min.css" />
+    <link rel="stylesheet" href="~/css/admin/styles.rtl.css" />
 }
 else
 {
-    <link rel="stylesheet" href="~/lib_npm/admin-lte/css/adminlte.min.css"/>
-    <link rel="stylesheet" href="~/css/admin/styles.css"/>
+    <link rel="stylesheet" href="~/lib_npm/admin-lte/css/adminlte.min.css" />
+    <link rel="stylesheet" href="~/css/admin/styles.css" />
 }
 
 <link rel="stylesheet" href="~/lib_npm/admin-lte/plugins/select2/css/select2.min.css">
@@ -86,29 +90,28 @@ else
 <script src="~/lib_npm/moment/min/moment-with-locales.min.js"></script>
 <script src="~/lib_npm/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
 <script src="~/lib_npm/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
-<script src="~/js/datatables-sorting-fix.js"></script>
 <script asp-location="Footer">
-        var rootAppPath = '@(Url.Content("~/"))';
-        var culture = "@GetDefaultCulture()";
+    var rootAppPath = '@(Url.Content("~/"))';
+    var culture = "@GetDefaultCulture()";
 
-        //load cldr for current culture
-        $.when(
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/likelySubtags.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/numbers.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/currencies.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/numberingSystems.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/ca-gregorian.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/timeZoneNames.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/timeData.json", dataType: "json"}),
-            $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/weekData.json", dataType: "json"}),
-        ).then(function () {
-            // Normalize $.get results, we only need the JSON, not the request statuses.
-            return [].slice.apply(arguments, [0]).map(function (result) {
-                return result[0];
-            });
-        }).then(Globalize.load).then(function () {
-            Globalize.locale(culture);
+    //load cldr for current culture
+    $.when(
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/likelySubtags.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/numbers.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/currencies.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/numberingSystems.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/ca-gregorian.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/main/" + culture + "/timeZoneNames.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/timeData.json", dataType: "json" }),
+        $.get({ url: rootAppPath + "lib_npm/cldr-data/supplemental/weekData.json", dataType: "json" }),
+    ).then(function () {
+        // Normalize $.get results, we only need the JSON, not the request statuses.
+        return [].slice.apply(arguments, [0]).map(function (result) {
+            return result[0];
         });
+    }).then(Globalize.load).then(function () {
+        Globalize.locale(culture);
+    });
 </script>
 
 @NopHtml.GenerateScripts(ResourceLocation.Head)
