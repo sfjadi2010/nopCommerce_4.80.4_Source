@@ -50,6 +50,26 @@ public abstract partial record BaseSearchModel : BaseNopModel, IPagingRequestMod
     /// </summary>
     public int Length { get; set; }
 
+    /// <summary>
+    /// Gets or sets column ordering direction ("asc" or "desc").
+    /// Used by DataTables for column sorting.
+    /// </summary>
+    /// <remarks>
+    /// This property should be named Order_0__Dir to match DataTables parameter format.
+    /// It's managed automatically by datatables-sorting-fix.js on column click.
+    /// </remarks>
+    public string Order_0__Dir { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the index of the column being ordered.
+    /// Used by DataTables for column sorting.
+    /// </summary>
+    /// <remarks>
+    /// This property should be named Order_0__Column to match DataTables parameter format.
+    /// It's managed automatically by datatables-sorting-fix.js on column click.
+    /// </remarks>
+    public int? Order_0__Column { get; set; }
+
     #endregion
 
     #region Methods

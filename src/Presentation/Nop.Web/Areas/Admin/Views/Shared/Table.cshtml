@@ -28,6 +28,15 @@
 
 <script src="~/js/admin.table.js" asp-location="Footer"></script>
 
+@* 
+    Note about DataTables sorting:
+    Column sorting is automatically enabled for all DataTables.
+    The global script (datatables-sorting-fix.js) ensures that the Order_0__Column and Order_0__Dir 
+    parameters are properly sent to the server when a user clicks on column headers.
+    For tables where the automatic solution doesn't work, you can manually call:
+    enableDataTablesSorting('#yourtableid');
+*@
+
 <table class="table table-bordered table-hover table-striped dataTable" width="100%" id="@Model.Name">
     @if (Model.FooterColumns > 0)
     {

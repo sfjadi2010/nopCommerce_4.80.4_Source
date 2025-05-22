@@ -365,3 +365,54 @@ function prepareTableCheckboxes(masterCheckbox, childCheckbox) {
   //Determining the state of the master checkbox by the state of its children
   $(masterCheckbox).prop('checked', $(childCheckbox).length == $(childCheckbox + ':checked').length && $(childCheckbox).length > 0);
 }
+
+/**
+ * Helper function to enable DataTables sorting on a specific table
+ * This can be used for individual tables where the generic solution is not working
+ * @param {string} tableSelector - CSS selector for the table
+ */
+function enableDataTablesSorting(tableSelector) {
+  var table = $(tableSelector).DataTable();
+  if (table) {
+    // Get the original ajax settings
+    var settings = table.settings()[0];
+    if (settings && settings.ajax) {
+      var originalAjax = settings.ajax;
+
+      // If ajax is a string URL, convert to object
+      if (typeof originalAjax === 'string') {
+        settings.ajax = {
+          url: originalAjax,
+          type: 'POST',
+          data: function(data) {
+            // Add sorting parameters if available
+            if (settings.aaSorting && settings.aaSorting.length) {
+              data['Order_0__Column'] = settings.aaSorting[0][0];
+              data['Order_0__Dir'] = settings.aaSorting[0][1];
+            }
+            return data;
+          }
+        };
+      }
+      // If ajax is already an object with a data function
+      else if (typeof originalAjax === 'object' && typeof originalAjax.data === 'function') {
+        var originalDataFn = originalAjax.data;
+        originalAjax.data = function(data) {
+          // Call the original data function
+          var modifiedData = originalDataFn.call(this, data) || data;
+
+          // Add sorting parameters if available
+          if (settings.aaSorting && settings.aaSorting.length) {
+            modifiedData['Order_0__Column'] = settings.aaSorting[0][0];
+            modifiedData['Order_0__Dir'] = settings.aaSorting[0][1];
+          }
+
+          return modifiedData;
+        };
+      }
+    }
+  }
+}
+
+// Expose the function globally
+window.enableDataTablesSorting = enableDataTablesSorting;
