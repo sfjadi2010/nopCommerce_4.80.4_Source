@@ -43,12 +43,31 @@ public abstract partial record BaseSearchModel : BaseNopModel, IPagingRequestMod
     /// <summary>
     /// Gets or sets skipping number of rows count. Paging first record indicator.
     /// </summary>
-    public int Start { get; set; }
+    public int Start { get; set; }    /// <summary>
+                                      /// Gets or sets paging length. Number of records that the table can display in the current draw. 
+                                      /// </summary>
+    public int Length { get; set; }
 
     /// <summary>
-    /// Gets or sets paging length. Number of records that the table can display in the current draw. 
+    /// Gets or sets the sort column name
     /// </summary>
-    public int Length { get; set; }
+    public string Order_0__Column { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sort direction
+    /// </summary>
+    public string Order_0__Dir { get; set; }
+
+    /// <summary>
+    /// Gets the sort property name based on the Order_0__Column value
+    /// </summary>
+    public string GetSortPropertyName(List<string> columnNames)
+    {
+        if (string.IsNullOrEmpty(Order_0__Column) || !int.TryParse(Order_0__Column, out int columnIndex) || columnIndex < 0 || columnIndex >= columnNames.Count)
+            return null;
+
+        return columnNames[columnIndex];
+    }
 
     #endregion
 

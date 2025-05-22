@@ -210,15 +210,14 @@
 
                       <div class="card card-default">
                           <div class="card-body">
-                            <nop-doc-reference asp-string-resource="@T("Admin.Documentation.Reference.Products", Docs.Products + Utm.OnAdmin)" />
-
-                              @await Html.PartialAsync("Table", new DataTablesModel
+                            <nop-doc-reference asp-string-resource="@T("Admin.Documentation.Reference.Products", Docs.Products + Utm.OnAdmin)" />                              @await Html.PartialAsync("Table", new DataTablesModel
                          {
                              Name = "products-grid",
                              UrlRead = new DataUrl("ProductList", "Product", null),
                              SearchButtonId = "search-products",
                              Length = Model.PageSize,
                              LengthMenu = Model.AvailablePageSizes,
+                             Ordering = true, // Enable sorting
                              Filters = new List<FilterParameter>
                                   {
                                       new FilterParameter(nameof(Model.SearchProductName)),
@@ -232,50 +231,54 @@
                                       new FilterParameter(nameof(Model.SearchPublishedId))
                                   },
                              ColumnCollection = new List<ColumnProperty>
-                                  {
-                                      new ColumnProperty(nameof(ProductModel.Id))
+                                  {                                      new ColumnProperty(nameof(ProductModel.Id))
                                       {
                                           IsMasterCheckBox = true,
                                           Render = new RenderCheckBox("checkbox_products"),
                                           ClassName =  NopColumnClassDefaults.CenterAll,
-                                          Width = "50"
+                                          Width = "50",
+                                          Orderable = false // Checkbox column should not be sortable
                                       },
                                       new ColumnProperty(nameof(ProductModel.PictureThumbnailUrl))
                                       {
                                           Title = T("Admin.Catalog.Products.Fields.PictureThumbnailUrl").Text,
                                           Width = "100",
-                                          Render = new RenderPicture(width: 100)
+                                          Render = new RenderPicture(width: 100),
+                                          Orderable = false // Pictures are not sortable
                                       },
                                       new ColumnProperty(nameof(ProductModel.Name))
                                       {
-                                          Title = T("Admin.Catalog.Products.Fields.Name").Text
+                                          Title = T("Admin.Catalog.Products.Fields.Name").Text,
+                                          Orderable = true // Enable sorting for Name
                                       },
                                       new ColumnProperty(nameof(ProductModel.Sku))
                                       {
                                           Title = T("Admin.Catalog.Products.Fields.Sku").Text,
-                                          Width = "100"
-                                      },
-                                      new ColumnProperty(nameof(ProductModel.FormattedPrice))
+                                          Width = "100",
+                                          Orderable = true // Enable sorting for SKU
+                                      },                                      new ColumnProperty(nameof(ProductModel.FormattedPrice))
                                       {
-                                          Title = T("Admin.Catalog.Products.Fields.Price").Text
-                                      },
-                                      new ColumnProperty(nameof(ProductModel.StockQuantityStr))
+                                          Title = T("Admin.Catalog.Products.Fields.Price").Text,
+                                          Orderable = true // Enable sorting for Price
+                                      },                                      new ColumnProperty(nameof(ProductModel.StockQuantityStr))
                                       {
-                                          Title = T("Admin.Catalog.Products.Fields.StockQuantity").Text
-                                      },                                      
-                                      new ColumnProperty(nameof(ProductModel.Published))
+                                          Title = T("Admin.Catalog.Products.Fields.StockQuantity").Text,
+                                          Orderable = true // Enable sorting for StockQuantity
+                                      },                                        new ColumnProperty(nameof(ProductModel.Published))
                                       {
                                           Title = T("Admin.Catalog.Products.Fields.Published").Text,
                                           Width = "80",
                                           ClassName = NopColumnClassDefaults.CenterAll,
-                                          Render = new RenderBoolean()
+                                          Render = new RenderBoolean(),
+                                          Orderable = true // Enable sorting for Published status
                                       },
                                       new ColumnProperty(nameof(ProductModel.Id))
                                       {
                                           Title = T("Admin.Common.Edit").Text,
                                           Width = "80",
                                           ClassName =  NopColumnClassDefaults.Button,
-                                          Render = new RenderButtonEdit(new DataUrl("~/Admin/Product/Edit"))
+                                          Render = new RenderButtonEdit(new DataUrl("~/Admin/Product/Edit")),
+                                          Orderable = false // Edit button should not be sortable
                                       }
                                   }
                          })
@@ -284,6 +287,7 @@
 
                             $(function() {
                                 $('#delete-selected-action-confirmation-submit-button').bind('click', function () {
+                                    debugger;
                                     var postData = {
                                         selectedIds: selectedIds
                                     };

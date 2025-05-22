@@ -370,9 +370,9 @@ public partial class ProductModelFactory : IProductModelFactory
                                     await _productAttributeParser.ParseProductAttributeValuesAsync(productAttributeMapping
                                         .ConditionAttributeXml);
                                 foreach (var attributeValue in selectedValues)
-                                foreach (var item in attributeModel.Values)
-                                    if (attributeValue.Id == item.Id)
-                                        item.IsPreSelected = true;
+                                    foreach (var item in attributeModel.Values)
+                                        if (attributeValue.Id == item.Id)
+                                            item.IsPreSelected = true;
                             }
 
                             break;
@@ -705,21 +705,17 @@ public partial class ProductModelFactory : IProductModelFactory
         searchModel.SetGridPageSize();
 
         return searchModel;
-    }
-
-    /// <summary>
-    /// Prepare paged product list model
-    /// </summary>
-    /// <param name="searchModel">Product search model</param>
-    /// <returns>
-    /// A task that represents the asynchronous operation
-    /// The task result contains the product list model
-    /// </returns>
+    }    /// <summary>
+         /// Prepare paged product list model
+         /// </summary>
+         /// <param name="searchModel">Product search model</param>
+         /// <returns>
+         /// A task that represents the asynchronous operation
+         /// The task result contains the product list model
+         /// </returns>
     public virtual async Task<ProductListModel> PrepareProductListModelAsync(ProductSearchModel searchModel)
     {
-        ArgumentNullException.ThrowIfNull(searchModel);
-
-        //get parameters to filter comments
+        ArgumentNullException.ThrowIfNull(searchModel);        //get parameters to filter comments
         var overridePublished = searchModel.SearchPublishedId == 0 ? null : (bool?)(searchModel.SearchPublishedId == 1);
         var currentVendor = await _workContext.GetCurrentVendorAsync();
         if (currentVendor != null)
@@ -729,6 +725,98 @@ public partial class ProductModelFactory : IProductModelFactory
         {
             var childCategoryIds = await _categoryService.GetChildCategoryIdsAsync(parentCategoryId: searchModel.SearchCategoryId, showHidden: true);
             categoryIds.AddRange(childCategoryIds);
+        }        // Determine sorting
+        var orderBy = Core.Domain.Catalog.ProductSortingEnum.Position;
+
+        // DataTables sends the column index that was clicked for sorting via Order_0__Column
+        // We need to map this index to the correct property name for sorting
+        var orderByProperty = string.Empty;
+
+        // Direct mapping from column index to property name for sorting
+        // Column indices in DataTables are 0-based and include all visible columns
+        // 0: Checkbox column (Not sortable)
+        // 1: Picture column (Not sortable)
+        // 2: Name column
+        // 3: SKU column
+        // 4: Price column
+        // 5: Stock quantity column
+        // 6: Published column
+        // 7: Edit button column (Not sortable)        // DataTables sends the zero-based index of the column that was clicked
+        // This needs to be mapped to the corresponding property name for sorting
+
+        // Save values for debugging
+        var columnIndexStr = searchModel.Order_0__Column;
+        var directionStr = searchModel.Order_0__Dir;
+
+        System.Diagnostics.Debug.WriteLine($"Sorting request - Column: {columnIndexStr}, Direction: {directionStr}");
+
+        // Default to no specific ordering (will use Position)
+        orderByProperty = null;
+
+        // Only sort if a column was specified
+        if (!string.IsNullOrEmpty(columnIndexStr) && int.TryParse(columnIndexStr, out int columnIndex))
+        {
+            // Map DataTables column index to property name
+            // Note: These indices must match the order in the List.cshtml ColumnCollection
+            switch (columnIndex)
+            {
+                case 2: // Name column - third visible column (0-indexed)
+                    orderByProperty = "Name";
+                    System.Diagnostics.Debug.WriteLine("Sorting by Name");
+                    break;
+                case 3: // SKU column - fourth visible column
+                    orderByProperty = "Sku";
+                    System.Diagnostics.Debug.WriteLine("Sorting by SKU");
+                    break;
+                case 4: // Price column - fifth visible column
+                    orderByProperty = "FormattedPrice";
+                    System.Diagnostics.Debug.WriteLine("Sorting by Price");
+                    break;
+                case 5: // Stock quantity column - sixth visible column
+                    orderByProperty = "StockQuantityStr";
+                    System.Diagnostics.Debug.WriteLine("Sorting by Stock Quantity");
+                    break;
+                case 6: // Published column - seventh visible column
+                    orderByProperty = "Published";
+                    System.Diagnostics.Debug.WriteLine("Sorting by Published Status");
+                    break;
+                default:
+                    System.Diagnostics.Debug.WriteLine($"No mapping for column index: {columnIndex}");
+                    break;
+            }
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"No valid column index provided for sorting");
+        }
+        // Map sorting property to appropriate ProductSortingEnum value
+        if (!string.IsNullOrEmpty(orderByProperty))
+        {
+            // Get the sort direction - default to ascending if not specified
+            var sortDirection = searchModel.Order_0__Dir?.ToLowerInvariant();
+            var isDescending = sortDirection == "desc";
+
+            // Log the sorting for debugging
+            System.Diagnostics.Debug.WriteLine($"Sorting by {orderByProperty}, direction: {sortDirection}");
+
+            // Map the property name to the appropriate enum value based on sort direction
+            orderBy = (orderByProperty, isDescending) switch
+            {
+                ("Name", false) => Core.Domain.Catalog.ProductSortingEnum.NameAsc,
+                ("Name", true) => Core.Domain.Catalog.ProductSortingEnum.NameDesc,
+                ("Sku", false) => Core.Domain.Catalog.ProductSortingEnum.SkuAsc,
+                ("Sku", true) => Core.Domain.Catalog.ProductSortingEnum.SkuDesc,
+                ("FormattedPrice", false) => Core.Domain.Catalog.ProductSortingEnum.PriceAsc,
+                ("FormattedPrice", true) => Core.Domain.Catalog.ProductSortingEnum.PriceDesc,
+                ("StockQuantityStr", false) => Core.Domain.Catalog.ProductSortingEnum.StockQuantityAsc,
+                ("StockQuantityStr", true) => Core.Domain.Catalog.ProductSortingEnum.StockQuantityDesc,
+                ("Published", false) => Core.Domain.Catalog.ProductSortingEnum.PublishedAsc,
+                ("Published", true) => Core.Domain.Catalog.ProductSortingEnum.PublishedDesc,
+                // Default to Position for any other columns
+                _ => Core.Domain.Catalog.ProductSortingEnum.Position
+            };
+
+            System.Diagnostics.Debug.WriteLine($"Selected ordering: {orderBy}");
         }
 
         //get products
@@ -741,7 +829,8 @@ public partial class ProductModelFactory : IProductModelFactory
             productType: searchModel.SearchProductTypeId > 0 ? (ProductType?)searchModel.SearchProductTypeId : null,
             keywords: searchModel.SearchProductName,
             pageIndex: searchModel.Page - 1, pageSize: searchModel.PageSize,
-            overridePublished: overridePublished);
+            overridePublished: overridePublished,
+            orderBy: orderBy);
 
         var primaryStoreCurrency = await _currencyService.GetCurrencyByIdAsync(_currencySettings.PrimaryStoreCurrencyId);
 
@@ -961,7 +1050,7 @@ public partial class ProductModelFactory : IProductModelFactory
             vendorId: currentVendor?.Id ?? 0);
 
         await _discountSupportedModelFactory.PrepareModelDiscountsAsync(model, product, availableDiscounts, excludeProperties);
-        
+
         //prepare model stores
         await _storeMappingSupportedModelFactory.PrepareModelStoresAsync(model, product, excludeProperties);
 
@@ -1569,7 +1658,7 @@ public partial class ProductModelFactory : IProductModelFactory
             };
         }
 
-        var attribute = await _specificationAttributeService.GetProductSpecificationAttributeByIdAsync(specificationId.Value) 
+        var attribute = await _specificationAttributeService.GetProductSpecificationAttributeByIdAsync(specificationId.Value)
                         ?? throw new ArgumentException("No specification attribute found with the specified id");
 
         //a vendor should have access only to his products
@@ -2300,7 +2389,7 @@ public partial class ProductModelFactory : IProductModelFactory
 
                 var combinationPicture = (await _productAttributeService.GetProductAttributeCombinationPicturesAsync(combination.Id)).FirstOrDefault();
                 var pictureThumbnailUrl = await _pictureService.GetPictureUrlAsync(combinationPicture?.PictureId ?? 0, 75, false);
-                    
+
                 //little hack here. Grid is rendered wrong way with <img> without "src" attribute
                 if (string.IsNullOrEmpty(pictureThumbnailUrl))
                     pictureThumbnailUrl = await _pictureService.GetDefaultPictureUrlAsync(targetSize: 1);

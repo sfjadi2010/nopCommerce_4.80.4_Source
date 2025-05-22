@@ -27,12 +27,12 @@ public static class ProductExtensions
             var query =
                 from product in productsQuery
                 join localizedProperty in localizedPropertyRepository.Table on new
-                    {
-                        product.Id,
-                        languageId = currentLanguageId,
-                        keyGroup = nameof(Product),
-                        key = nameof(Product.Name)
-                    }
+                {
+                    product.Id,
+                    languageId = currentLanguageId,
+                    keyGroup = nameof(Product),
+                    key = nameof(Product.Name)
+                }
                     equals new
                     {
                         Id = localizedProperty.EntityId,
@@ -41,7 +41,7 @@ public static class ProductExtensions
                         key = localizedProperty.LocaleKey
                     } into localizedProperties
                 from localizedProperty in localizedProperties.DefaultIfEmpty(new LocalizedProperty { LocaleValue = product.Name })
-                select new 
+                select new
                 {
                     sortName = localizedProperty == null ? product.Name : localizedProperty.LocaleValue,
                     product
@@ -49,12 +49,12 @@ public static class ProductExtensions
 
             if (orderBy == ProductSortingEnum.NameAsc)
                 productsQuery = from item in query
-                    orderby item.sortName
-                    select item.product;
+                                orderby item.sortName
+                                select item.product;
             else
                 productsQuery = from item in query
-                    orderby item.sortName descending
-                    select item.product;
+                                orderby item.sortName descending
+                                select item.product;
 
             return productsQuery;
         }
@@ -64,6 +64,13 @@ public static class ProductExtensions
             ProductSortingEnum.PriceAsc => productsQuery.OrderBy(p => p.Price),
             ProductSortingEnum.PriceDesc => productsQuery.OrderByDescending(p => p.Price),
             ProductSortingEnum.CreatedOn => productsQuery.OrderByDescending(p => p.CreatedOnUtc),
+            ProductSortingEnum.CreatedOnDesc => productsQuery.OrderByDescending(p => p.CreatedOnUtc),
+            ProductSortingEnum.SkuAsc => productsQuery.OrderBy(p => p.Sku),
+            ProductSortingEnum.SkuDesc => productsQuery.OrderByDescending(p => p.Sku),
+            ProductSortingEnum.StockQuantityAsc => productsQuery.OrderBy(p => p.StockQuantity),
+            ProductSortingEnum.StockQuantityDesc => productsQuery.OrderByDescending(p => p.StockQuantity),
+            ProductSortingEnum.PublishedAsc => productsQuery.OrderBy(p => p.Published),
+            ProductSortingEnum.PublishedDesc => productsQuery.OrderByDescending(p => p.Published),
             ProductSortingEnum.Position when productsQuery is IOrderedQueryable => productsQuery,
             _ => productsQuery.OrderBy(p => p.DisplayOrder).ThenBy(p => p.Id)
         };

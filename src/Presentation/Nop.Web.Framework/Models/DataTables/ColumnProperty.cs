@@ -10,13 +10,14 @@ public partial class ColumnProperty
     /// <summary>
     /// Initializes a new instance of the ColumnProperty class
     /// </summary>
-    /// <param name="data">The data source for the column from the rows data object</param>
+    /// <param name="data">The data source for the column from the rows data object</param>    
     public ColumnProperty(string data)
     {
         Data = data;
         //set default values
         Visible = true;
         Encode = true;
+        Orderable = true; // By default columns are orderable
     }
 
     #endregion
@@ -77,12 +78,15 @@ public partial class ColumnProperty
     /// <summary>
     /// Data column type
     /// </summary>
-    public EditType EditType { get; set; }
+    public EditType EditType { get; set; }    /// <summary>
+                                              /// Enable or disable encode on the data in this column.
+                                              /// </summary>
+    public bool Encode { get; set; }
 
     /// <summary>
-    /// Enable or disable encode on the data in this column.
+    /// Enable or disable ordering (sorting) functionality for this column.
     /// </summary>
-    public bool Encode { get; set; }
+    public bool Orderable { get; set; } = true;
 
     #endregion
 }
