@@ -107,6 +107,20 @@ else
         }
         },
         data: function(data) {
+            // Ensure order parameters are correctly formatted for nopCommerce
+            // DataTables 1.10+ format uses data.order array of objects
+            if (data.order && data.order.length > 0) {
+                data.Order_0__Column = data.order[0].column;
+                data.Order_0__Dir = data.order[0].dir;
+                console.log('Adding sorting parameters from data.order: Column=' + data.Order_0__Column + ', Direction=' + data.Order_0__Dir);
+            } 
+            // DataTables 1.9- format uses separate parameters
+            else if (data.iSortCol_0 !== undefined) {
+                data.Order_0__Column = data.iSortCol_0;
+                data.Order_0__Dir = data.sSortDir_0;
+                console.log('Adding sorting parameters from legacy format: Column=' + data.Order_0__Column + ', Direction=' + data.Order_0__Dir);
+            }
+            
             @if (Model.Filters != null)
             {
                 foreach (var filter in Model.Filters)
@@ -186,6 +200,19 @@ else
     </text>
 }
 ordering: @Model.Ordering.ToString().ToLowerInvariant(),
+// Add order state initialization for columns
+@if (Model.Ordering)
+{
+    <text>
+    // Ensure ordering parameters are set when the user clicks on a column header
+    // These parameters are required by nopCommerce backend model binding
+    order: [],
+    orderFixed: [],
+    orderCellsTop: false,
+    orderClasses: true,
+    orderMulti: true,
+    </text>
+}
 @if (Model.RefreshButton)
 {
     <text>
@@ -237,18 +264,18 @@ columns: [
                     </text>
                 }
                 else
-                {
-                    if (string.IsNullOrEmpty(column.Title) && column.IsMasterCheckBox)
+                {                if (string.IsNullOrEmpty(column.Title) && column.IsMasterCheckBox)
                     {
                         <text>
                         title: '<input class="mastercheckbox" type="checkbox"/>',
                         </text>
                     }
                 }
-            }
+            }            
             width: '@column.Width',
             visible: @column.Visible.ToString().ToLowerInvariant(),
             searchable: @column.Searchable.ToString().ToLowerInvariant(),
+            orderable: @column.Orderable.ToString().ToLowerInvariant(),
             @if (column.AutoWidth)
             {
                 <text>
