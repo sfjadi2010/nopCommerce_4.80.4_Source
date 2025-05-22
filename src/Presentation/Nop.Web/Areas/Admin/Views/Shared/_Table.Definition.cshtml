@@ -97,15 +97,14 @@ else
         url: "@Html.Raw(GetUrl(Model.UrlRead))",
         type: "POST",
         dataType: "json",
-        dataSrc: "Data",
-        beforeSend: function() {
+        dataSrc: "Data",        beforeSend: function() {
         @if (isMasterCheckBoxUsed)
         {
             <text>
             clearMasterCheckbox('#@Model.Name');
             </text>
         }
-        },        data: function(data) {
+        },        data: function(data) {}
             
             @if (Model.Filters != null)
             {
